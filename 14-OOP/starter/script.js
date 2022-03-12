@@ -142,6 +142,8 @@ class Account {
     this.withdrawOnlyArray;
     this.doubleLetterArray;
     this.doubleLetterArrayReduced = [];
+    this.splitArray;
+    this.regexArray;
   }
 
   get pin() {
@@ -237,6 +239,20 @@ class Account {
   }
 
   luckySquareBracket() {
+    // GUARD CLAUSE FOR INCORRECT STRING FORMAT
+
+    this.regexArray = this.owner
+      .match(/(\[[a-z]+)(?=\])/g)
+      .join('')
+      .split(/\[/)
+      .filter(Boolean);
+
+    for (let element of this.regexArray) {
+      if (element.length > 1) {
+        return `Your word can only contain brackets that enclose a single letter, or the entre word`;
+      }
+    }
+
     if (
       // MORE THAN ONE DOUBLE SCORING LETTER
       this.owner.split('[').length - 1 >
@@ -292,7 +308,7 @@ class Account {
   }
 }
 
-const acc1 = new Account('[a]lexande[r]', 'EUR', 7654);
+const acc1 = new Account('[a]lex[a]nde[r]', 'EUR', 7654);
 acc1.deposit(1200);
 acc1.withdraw(350);
 acc1.requestLoan(210);
