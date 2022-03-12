@@ -240,7 +240,6 @@ class Account {
 
   luckySquareBracket() {
     // GUARD CLAUSE FOR INCORRECT STRING FORMAT
-
     this.regexArray = this.owner
       .match(/(\[[a-z]+)(?=\])/g)
       .join('')
@@ -248,7 +247,7 @@ class Account {
       .filter(Boolean);
 
     for (let element of this.regexArray) {
-      if (element.length > 1) {
+      if (element.length > 1 && this.regexArray.length > 1) {
         return `Your word can only contain brackets that enclose a single letter, or the entre word`;
       }
     }
@@ -308,7 +307,7 @@ class Account {
   }
 }
 
-const acc1 = new Account('[a]lex[a]nde[r]', 'EUR', 7654);
+const acc1 = new Account('[alexander]', 'EUR', 7654);
 acc1.deposit(1200);
 acc1.withdraw(350);
 acc1.requestLoan(210);
