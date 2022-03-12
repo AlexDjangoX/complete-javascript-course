@@ -124,7 +124,8 @@ class Account {
   #movements = [];
   #pin;
 
-  constructor(owner, currency, pin) {
+  constructor(owner, currency, pin, scrabble) {
+    this.scrabble = scrabble;
     this.owner = owner;
     this.currency = currency;
     // protected property - not available outside class
@@ -240,7 +241,7 @@ class Account {
 
   luckySquareBracket() {
     // GUARD CLAUSE FOR INCORRECT STRING FORMAT
-    this.regexArray = this.owner
+    this.regexArray = this.scrabble
       .match(/(\[[a-z]+)(?=\])/g)
       .join('')
       .split(/\[/)
@@ -254,10 +255,10 @@ class Account {
 
     if (
       // MORE THAN ONE DOUBLE SCORING LETTER
-      this.owner.split('[').length - 1 >
+      this.scrabble.split('[').length - 1 >
       1
     ) {
-      this.doubleLetterArray = [...this.owner];
+      this.doubleLetterArray = [...this.scrabble];
       for (let j = 0; j < this.doubleLetterArray.length; j++) {
         if (this.doubleLetterArray[j] === '[') {
           this.doubleLetterArrayReduced.push(this.doubleLetterArray[j + 1]);
@@ -266,22 +267,22 @@ class Account {
       return `${this.doubleLetterArrayReduced} : THESE ARE YOUR DOUBLE SCORING LETTERS `;
     } else if (
       // ONE LETTER BUT NOT FIRST
-      this.owner.includes('[') &&
-      this.owner.includes(']') &&
-      this.owner[0] !== '['
+      this.scrabble.includes('[') &&
+      this.scrabble.includes(']') &&
+      this.scrabble[0] !== '['
     ) {
-      return this.owner[this.owner.indexOf('[') + 1];
+      return this.scrabble[this.scrabble.indexOf('[') + 1];
     } else if (
       // ONE LETTER BUT NOT LAST
-      this.owner.includes('[') &&
-      this.owner.includes(']') &&
-      this.owner[this.owner.length - 1] !== ']'
+      this.scrabble.includes('[') &&
+      this.scrabble.includes(']') &&
+      this.scrabble[this.scrabble.length - 1] !== ']'
     ) {
-      return this.owner[this.owner.indexOf('[') + 1];
+      return this.scrabble[this.scrabble.indexOf('[') + 1];
     } else if (
       // WHOLE WORD BETWEEN [ ]
-      this.owner[0] === '[' &&
-      this.owner[this.owner.length - 1] === ']'
+      this.scrabble[0] === '[' &&
+      this.scrabble[this.scrabble.length - 1] === ']'
     ) {
       this.deposit(this.largestDepositMade() * 100000);
       return this.#movements;
@@ -307,7 +308,7 @@ class Account {
   }
 }
 
-const acc1 = new Account('[alexander]', 'EUR', 7654);
+const acc1 = new Account('[a]lexande[r]', 'EUR', 7654, '[S]crabble[p]i[p]');
 acc1.deposit(1200);
 acc1.withdraw(350);
 acc1.requestLoan(210);
@@ -341,3 +342,155 @@ console.log('290', acc1.nameIncludesCurlyRight());
 console.log('292', acc1.luckyCurlyBracket());
 console.log('293', acc1.luckySquareBracket());
 console.log('294', acc1.doubleTripleScore());
+
+const scoreObject = {
+  A: 1,
+  E: 1,
+  I: 1,
+  O: 1,
+  U: 1,
+  L: 1,
+  N: 1,
+  R: 1,
+  S: 1,
+  T: 1,
+  D: 2,
+  G: 2,
+  B: 3,
+  C: 3,
+  M: 3,
+  P: 3,
+  F: 4,
+  H: 4,
+  V: 4,
+  W: 4,
+  Y: 4,
+  K: 5,
+  J: 8,
+  X: 8,
+  Q: 10,
+  Z: 10,
+};
+
+class Scrabble {
+  constructor(scrabble) {
+    this.scrabble = scrabble;
+
+    this.doubleLetterArray;
+    this.doubleLetterArrayReduced = [];
+    this.regexArray;
+  }
+
+  // wordArray() {
+  //   this.regexArray = [...this.word.toUpperCase()];
+  //   return this;
+  // }
+
+  doubleScoreCurlyBrackets() {
+    // GUARD CLAUSE FOR INCORRECT STRING FORMAT
+    this.regexArray = this.scrabble
+      .match(/(\[[a-z]+)(?=\])/g)
+      .join('')
+      .split(/\[/)
+      .filter(Boolean);
+
+    for (let element of this.regexArray) {
+      if (element.length > 1 && this.regexArray.length > 1) {
+        return `Your word can only contain brackets that enclose a single letter, or the entire word`;
+      }
+    }
+
+    if (
+      // MORE THAN ONE DOUBLE SCORING LETTER
+      this.scrabble.split('[').length - 1 >
+      1
+    ) {
+      this.doubleLetterArray = [...this.scrabble];
+      for (let j = 0; j < this.doubleLetterArray.length; j++) {
+        if (this.doubleLetterArray[j] === '[') {
+          this.doubleLetterArrayReduced.push(this.doubleLetterArray[j + 1]);
+        }
+      }
+      return `${this.doubleLetterArrayReduced} : THESE ARE YOUR TRIPLE SCORING LETTERS `;
+    } else if (
+      // ONE LETTER BUT NOT FIRST
+      this.scrabble.includes('[') &&
+      this.scrabble.includes(']') &&
+      this.scrabble[0] !== '['
+    ) {
+      return this.scrabble[this.scrabble.indexOf('[') + 1];
+    } else if (
+      // ONE LETTER BUT NOT LAST
+      this.scrabble.includes('[') &&
+      this.scrabble.includes(']') &&
+      this.scrabble[this.scrabble.length - 1] !== ']'
+    ) {
+      return this.scrabble[this.scrabble.indexOf('[') + 1];
+    } else if (
+      // WHOLE WORD BETWEEN [ ]
+      this.scrabble[0] === '[' &&
+      this.scrabble[this.scrabble.length - 1] === ']'
+    ) {
+      this.deposit(this.largestDepositMade() * 100000);
+      return true;
+    } else {
+      return `You have no double scoring letters`;
+    }
+  }
+
+  tripleScoreSquareBrackets() {
+    // GUARD CLAUSE FOR INCORRECT STRING FORMAT
+    this.regexArray = this.scrabble
+      .match(/(\[[a-z]+)(?=\])/g)
+      .join('')
+      .split(/\[/)
+      .filter(Boolean);
+
+    for (let element of this.regexArray) {
+      if (element.length > 1 && this.regexArray.length > 1) {
+        return `Your word can only contain brackets that enclose a single letter, or the entire word`;
+      }
+    }
+
+    if (
+      // MORE THAN ONE DOUBLE SCORING LETTER
+      this.scrabble.split('[').length - 1 >
+      1
+    ) {
+      this.doubleLetterArray = [...this.scrabble];
+      for (let j = 0; j < this.doubleLetterArray.length; j++) {
+        if (this.doubleLetterArray[j] === '[') {
+          this.doubleLetterArrayReduced.push(this.doubleLetterArray[j + 1]);
+        }
+      }
+      return `${this.doubleLetterArrayReduced} : THESE ARE YOUR TRIPLE SCORING LETTERS `;
+    } else if (
+      // ONE LETTER BUT NOT FIRST
+      this.scrabble.includes('[') &&
+      this.scrabble.includes(']') &&
+      this.scrabble[0] !== '['
+    ) {
+      return this.scrabble[this.scrabble.indexOf('[') + 1];
+    } else if (
+      // ONE LETTER BUT NOT LAST
+      this.scrabble.includes('[') &&
+      this.scrabble.includes(']') &&
+      this.scrabble[this.scrabble.length - 1] !== ']'
+    ) {
+      return this.scrabble[this.scrabble.indexOf('[') + 1];
+    } else if (
+      // WHOLE WORD BETWEEN [ ]
+      this.scrabble[0] === '[' &&
+      this.scrabble[this.scrabble.length - 1] === ']'
+    ) {
+      this.deposit(this.largestDepositMade() * 100000);
+      return true;
+    } else {
+      return `You have no double scoring letters`;
+    }
+  }
+}
+
+const word = new Scrabble('[A]lexan[d]e[r]');
+
+console.log(word.tripleScoreSquareBrackets());
