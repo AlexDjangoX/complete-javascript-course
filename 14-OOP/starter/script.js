@@ -380,7 +380,7 @@ class Scrabble {
     this.tripleLetterArray;
     this.doubleLetterArrayReduced = [];
     this.tripleLetterArrayReduced = [];
-    this.regexArray;
+    this.regexArray = [];
     this.bracketsToRemove = ['[', ']', '{', '}'];
     this.doubleScoreLettersToRemove;
     this.cleanArrayForScoring;
@@ -397,16 +397,18 @@ class Scrabble {
   // ()
   doubleScoreCurlyBrackets() {
     // GUARD CLAUSE FOR INCORRECT STRING FORMAT
-    this.regexArray = this.scrabble
-      .toLowerCase()
-      .match(/(\{[a-z]+)(?=\})/g)
-      .join('')
-      .split(/\{/)
-      .filter(Boolean);
-    console.log('line 405...', this.regexArray);
-    for (let element of this.regexArray) {
-      if (element.length > 1 && this.regexArray.length > 1) {
-        return `Your word can only contain brackets that enclose a single letter, or the entire word`;
+    if (this.regexArray.includes('{}[]')) {
+      this.regexArray = this.scrabble
+        .toLowerCase()
+        .match(/(\{[a-z]+)(?=\})/g)
+        .join('')
+        .split(/\{/)
+        .filter(Boolean);
+      console.log('line 405...', this.regexArray);
+      for (let element of this.regexArray) {
+        if (element.length > 1 && this.regexArray.length > 1) {
+          return `Your word can only contain brackets that enclose a single letter, or the entire word`;
+        }
       }
     }
 
@@ -447,25 +449,27 @@ class Scrabble {
       this.scrabble[0] === '{' &&
       this.scrabble[this.scrabble.length - 1] === '}'
     ) {
-      return this.scrabble;
+      this.doubleLetterArrayReduced = [...this.scrabble];
+      return this.doubleLetterArrayReduced;
     } else {
-      return `You have no double scoring letters, OR WORDS`;
+      return ``;
     }
   }
 
   tripleScoreSquareBrackets() {
     // GUARD CLAUSE FOR INCORRECT STRING FORMAT
+    if (this.scrabble.includes('{}[]')) {
+      this.regexArray = this.scrabble
+        .toLowerCase()
+        .match(/(\[[a-z]+)(?=\])/g)
+        .join('')
+        .split(/\[/)
+        .filter(Boolean);
 
-    this.regexArray = this.scrabble
-      .toLowerCase()
-      .match(/(\[[a-z]+)(?=\])/g)
-      .join('')
-      .split(/\[/)
-      .filter(Boolean);
-
-    for (let element of this.regexArray) {
-      if (element.length > 1 && this.regexArray.length > 1) {
-        return `Your word can only contain brackets that enclose a single letter, or the entire word`;
+      for (let element of this.regexArray) {
+        if (element.length > 1 && this.regexArray.length > 1) {
+          return `Your word can only contain brackets that enclose a single letter, or the entire word`;
+        }
       }
     }
 
@@ -487,22 +491,29 @@ class Scrabble {
       this.scrabble.includes(']') &&
       this.scrabble[0] !== '['
     ) {
-      return this.scrabble[this.scrabble.indexOf('[') + 1];
+      this.tripleLetterArrayReduced.push(
+        this.scrabble[this.scrabble.indexOf('[') + 1]
+      );
+      return this.tripleLetterArrayReduced;
     } else if (
       // ONE LETTER, BUT NOT LAST, POSSIBLY FIRST, ANYTHING IN BETWEEN
       this.scrabble.includes('[') &&
       this.scrabble.includes(']') &&
       this.scrabble[this.scrabble.length - 1] !== ']'
     ) {
-      return this.scrabble[this.scrabble.indexOf('[') + 1];
+      this.tripleLetterArrayReduced.push(
+        this.scrabble[this.scrabble.indexOf('[') + 1]
+      );
+      return this.tripleLetterArrayReduced;
     } else if (
       // WHOLE WORD BETWEEN [ ]
       this.scrabble[0] === '[' &&
       this.scrabble[this.scrabble.length - 1] === ']'
     ) {
-      return [...this.scrabble];
+      this.tripleLetterArrayReduced = [...this.scrabble];
+      return this.tripleLetterArrayReduced;
     } else {
-      return `You have no triple scoring letters`;
+      return ``;
     }
   }
 
@@ -522,19 +533,18 @@ class Scrabble {
     const cleanArrayForScoring = this.arrayMinusScoredLetters.filter(item => {
       return this.bracketsToRemove.indexOf(item) === -1;
     });
-    return cleanArrayForScoring;
   }
 }
 
-const doubleScoreWord = new Scrabble('[g]hhh{p}hnnnnnm{m}mnnL{L}Op[P]');
+const doubleScoreWord = new Scrabble('OXYPHENBUTAZONE');
 const wordArray = doubleScoreWord.wordArray();
 console.log('wordArray', wordArray);
 const scoredLettersDouble = doubleScoreWord.doubleScoreCurlyBrackets();
 const scoredLettersTriple = doubleScoreWord.tripleScoreSquareBrackets();
-console.log('double score letters', scoredLettersDouble);
-console.log('triple score letters', scoredLettersTriple);
+console.log('scoredLettersDouble', scoredLettersDouble);
+console.log('scoredLettersTriple', scoredLettersTriple);
 
-// // remove brackets from array
+// remove brackets from array
 
 const bracketsToRemove = ['[', ']', '{', '}'];
 const arrayCleanOfBrackets = wordArray.filter(item => {
@@ -561,26 +571,23 @@ console.log('arrayCleanDoubleTriple', arrayCleanDoubleTriple);
 const singleScore = arrayCleanDoubleTriple
   .map(letter => scoreObject[letter.toUpperCase()])
   .reduce((x, y) => x + y, 0);
-
 console.log(singleScore);
-
-const singleScore_ = ['o', 'i', 'n', 't', 'L', 'L', 'O'].reduce(
-  (acc, letter) => (acc += scoreObject[letter.toUpperCase()]),
-  0
-);
-
-console.log(singleScore_);
 
 // double score
 
-const doubleScore = scoredLettersDouble.reduce(
-  (acc, letter) => (acc += scoreObject[letter.toUpperCase()]),
-  0
-);
+const doubleScore = scoredLettersDouble
+  .map(letter => scoreObject[letter.toUpperCase()])
+  .reduce((x, y) => x + y, 0);
 
 console.log(doubleScore);
 
 // triple score
+
+const tripleScore = scoredLettersTriple
+  .map(letter => scoreObject[letter.toUpperCase()])
+  .reduce((x, y) => x + y, 0);
+
+console.log(tripleScore);
 
 // const tripleScore = array => {
 //   array.reduce((acc, letter) => (acc += scoreObject[letter]), 0);
