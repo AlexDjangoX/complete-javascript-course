@@ -381,6 +381,9 @@ class Scrabble {
     this.doubleLetterArrayReduced = [];
     this.tripleLetterArrayReduced = [];
     this.regexArray;
+    this.bracketsToRemove = ['[', ']', '{', '}'];
+    this.doubleScoreLettersToRemove;
+    this.cleanArrayForScoring;
   }
 
   wordArray() {
@@ -391,15 +394,16 @@ class Scrabble {
   lettersOnly() {
     return str.replace(/[^a-zA-Z]/g, '');
   }
-
+  // ()
   doubleScoreCurlyBrackets() {
     // GUARD CLAUSE FOR INCORRECT STRING FORMAT
     this.regexArray = this.scrabble
+      .toLowerCase()
       .match(/(\{[a-z]+)(?=\})/g)
       .join('')
       .split(/\{/)
       .filter(Boolean);
-
+    console.log('line 405...', this.regexArray);
     for (let element of this.regexArray) {
       if (element.length > 1 && this.regexArray.length > 1) {
         return `Your word can only contain brackets that enclose a single letter, or the entire word`;
@@ -421,17 +425,23 @@ class Scrabble {
     } else if (
       // ONE LETTER, BUT NOT FIRST, POSSIBLY LAST, ANYTHING IN BETWEEN
       this.scrabble.includes('{') &&
-      this.scrabble.includes('}') &&
+      // this.scrabble.includes('}') &&
       this.scrabble[0] !== '{'
     ) {
-      return this.scrabble[this.scrabble.indexOf('{') + 1];
+      this.doubleLetterArrayReduced.push(
+        this.scrabble[this.scrabble.indexOf('{') + 1]
+      );
+      return this.doubleLetterArrayReduced;
     } else if (
       // ONE LETTER, BUT NOT LAST, POSSIBLY FIRST, ANYTHING IN BETWEEN
-      this.scrabble.includes('{') &&
+      // this.scrabble.includes('{') &&
       this.scrabble.includes('}') &&
       this.scrabble[this.scrabble.length - 1] !== '}'
     ) {
-      return this.scrabble[this.scrabble.indexOf('{') + 1];
+      this.doubleLetterArrayReduced.push(
+        this.scrabble[this.scrabble.indexOf('{') + 1]
+      );
+      return this.doubleLetterArrayReduced;
     } else if (
       // WHOLE WORD BETWEEN [ ]
       this.scrabble[0] === '{' &&
@@ -447,6 +457,7 @@ class Scrabble {
     // GUARD CLAUSE FOR INCORRECT STRING FORMAT
 
     this.regexArray = this.scrabble
+      .toLowerCase()
       .match(/(\[[a-z]+)(?=\])/g)
       .join('')
       .split(/\[/)
@@ -489,25 +500,127 @@ class Scrabble {
       this.scrabble[0] === '[' &&
       this.scrabble[this.scrabble.length - 1] === ']'
     ) {
-      return this.scrabble;
+      return [...this.scrabble];
     } else {
       return `You have no triple scoring letters`;
     }
   }
+
+  // REMOVE DOUBLE SCORE LETTERS FROM ARRAY
+  removeScoredLetters() {
+    const doubleScoreLettersToRemove = this.doubleScoreCurlyBrackets();
+    console.log(doubleScoreLettersToRemove);
+
+    const arrayMinusScoredLetters = [...this.scrabble].filter(item => {
+      return doubleScoreLettersToRemove.indexOf(item) === -1;
+    });
+    return arrayMinusScoredLetters;
+  }
+
+  // REMOVE BRACKETS FROM ARRAY
+  cleanArrayOfBrackets() {
+    const cleanArrayForScoring = this.arrayMinusScoredLetters.filter(item => {
+      return this.bracketsToRemove.indexOf(item) === -1;
+    });
+    return cleanArrayForScoring;
+  }
 }
 
-// const doubleScoreWord = new Scrabble('{A}lex{a}n[d]e{r}{p}{r}{k}poiyt{z}');
-const tripleScoreWord = new Scrabble('[x]ooi[x]kj[x][x]iu[x]oiu[x]');
-const wordArray = tripleScoreWord.wordArray();
-const scoredLetters = tripleScoreWord.tripleScoreSquareBrackets();
-console.log('502', wordArray);
-console.log('scored letters....', scoredLetters);
+const doubleScoreWord = new Scrabble('[g]hhh{p}hnnnnnm{m}mnnL{L}Op[P]');
+const wordArray = doubleScoreWord.wordArray();
+console.log('wordArray', wordArray);
+const scoredLettersDouble = doubleScoreWord.doubleScoreCurlyBrackets();
+const scoredLettersTriple = doubleScoreWord.tripleScoreSquareBrackets();
+console.log('double score letters', scoredLettersDouble);
+console.log('triple score letters', scoredLettersTriple);
 
-const arrayClean = wordArray.filter(item => {
-  return scoredLetters.indexOf(item) === -1;
+// // remove brackets from array
+
+const bracketsToRemove = ['[', ']', '{', '}'];
+const arrayCleanOfBrackets = wordArray.filter(item => {
+  return bracketsToRemove.indexOf(item) === -1;
 });
-console.log(arrayClean);
+console.log('arrayCleanOfBrackets.', arrayCleanOfBrackets);
 
+// remove double score letters from original array
+
+const arrayCleanOfDouble = arrayCleanOfBrackets.filter(item => {
+  return scoredLettersDouble.indexOf(item) === -1;
+});
+console.log('arrayCleanOfDouble....', arrayCleanOfDouble);
+
+// remove triple score letters
+
+const arrayCleanDoubleTriple = arrayCleanOfDouble.filter(item => {
+  return scoredLettersTriple.indexOf(item) === -1;
+});
+console.log('arrayCleanDoubleTriple', arrayCleanDoubleTriple);
+
+// single score
+
+const singleScore = arrayCleanDoubleTriple
+  .map(letter => scoreObject[letter.toUpperCase()])
+  .reduce((x, y) => x + y, 0);
+
+console.log(singleScore);
+
+const singleScore_ = ['o', 'i', 'n', 't', 'L', 'L', 'O'].reduce(
+  (acc, letter) => (acc += scoreObject[letter.toUpperCase()]),
+  0
+);
+
+console.log(singleScore_);
+
+// double score
+
+const doubleScore = scoredLettersDouble.reduce(
+  (acc, letter) => (acc += scoreObject[letter.toUpperCase()]),
+  0
+);
+
+console.log(doubleScore);
+
+// triple score
+
+// const tripleScore = array => {
+//   array.reduce((acc, letter) => (acc += scoreObject[letter]), 0);
+// };
+
+// console.log(scoredLettersTriple.tripleScore());
+
+// console.log(scoreTotalRefactored('OXYPHENBUTAZONE'));
+
+// const scoreTotalRefactoredAgain = word =>
+//   [...word.toUpperCase()].reduce(
+//     (acc, letter) => (acc += scoreObject[letter]),
+//     0
+//   );
+// const doubleScoreWord = new Scrabble('{A}lex{a}n[d]e{r}{p}{r}{k}poiyt{z}');
+// const tripleScoreWord = new Scrabble('[x]pp[x]poooiuuy[x]');
+// console.log(tripleScoreWord);
+// const wordArray = tripleScoreWord.wordArray();
+// console.log('entire array', wordArray);
+// console.log('trip score letters', tripleScoreWord.tripleScoreSquareBrackets());
+// console.log('array minus trip', tripleScoreWord.removeScoredLetters());
+
+// console.log(tripleScoreWord.removeScoredLetters());
+
+// const scoredLetters = tripleScoreWord.tripleScoreSquareBrackets();
+// console.log('triple score word array....', wordArray);
+// console.log('triple score letters....', scoredLetters);
+
+// const arrayClean = wordArray.filter(item => {
+//   return scoredLetters.indexOf(item) === -1;
+// });
+// console.log('triple score with scored letters removed', arrayClean);
+
+// const bracketsToRemove = ['[', ']', '{', '}'];
+
+// const arrayCleanOfBrackets = arrayClean.filter(item => {
+//   return bracketsToRemove.indexOf(item) === -1;
+// });
+
+// console.log('array clean of scored letters and brackets', arrayCleanOfBrackets);
 // remove non-letters from a string
 // function lettersOnly(str) {
 //   return str.replace(/[^a-zA-Z]/g, '');
